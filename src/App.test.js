@@ -30,7 +30,7 @@ it.only("renders username component",  async () => {
  
   const screenshot = await generateImage({
     screenshot: {
-      path: 'test_favorites.png'
+      path: 'test_component.png'
     },
     debug: true
   });

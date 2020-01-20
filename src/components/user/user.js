@@ -1,10 +1,12 @@
 import React, {Component} from 'react';
-import '../../style.css';
+//import '../../style.css';
 import {bindActionCreators} from 'redux';
 import {connect } from 'react-redux';
+import styles from  '../../style.styl';
 
 
 class User extends Component{
+
     getUserList(){
         return this.props.users.map((user)=>{
             return (
@@ -18,10 +20,10 @@ class User extends Component{
    render(){
         return(
             <div>
-                <h2 className="username">Username</h2>
+                <h2 className={styles.username}>Username</h2>
                 <ul>{this.getUserList()}</ul>
                 <hr />
-                <h2 className="userdetails">User Details</h2>
+                <h2 className={styles.userdetails}>User Details</h2>
             </div>
         )
    }

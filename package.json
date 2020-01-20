@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@testing-library/jest-dom": "^5.0.0",
     "autoprefixer": "7.1.6",
     "babel-core": "6.26.0",
     "babel-eslint": "7.2.3",
@@ -29,7 +30,8 @@
     "jest": "^20.0.4",
     "jest-dom": "1.12.1",
     "jest-image-snapshot": "2.5.0",
-    "jest-transform-css": "2.0.0",
+    "jest-stylus": "^0.1.2",
+    "jest-transform-css": "^2.0.0",
     "jest-transform-file": "1.1.1",
     "jsdom-screenshot": "^3.2.0",
     "object-assign": "4.1.1",
@@ -45,6 +47,8 @@
     "redux": "^4.0.5",
     "resolve": "1.6.0",
     "style-loader": "0.19.0",
+    "stylus": "^0.54.7",
+    "stylus-loader": "^3.0.2",
     "sw-precache-webpack-plugin": "0.11.4",
     "url-loader": "0.6.2",
     "webpack": "3.8.1",
@@ -73,7 +77,7 @@
     "testURL": "http://localhost",
     "transform": {
       "^.+\\.(js|jsx|mjs)$": "<rootDir>/node_modules/babel-jest",
-      "^.+\\.css$": "jest-transform-css",
+      "^.+\\.(styl|css)$": "jest-transform-css",
       "^.+\\.svg$": "jest-transform-file",
       "^(?!.*\\.(js|jsx|mjs|css|json|svg)$)": "<rootDir>/config/jest/fileTransform.js"
     },
@@ -81,7 +85,8 @@
       "[/\\\\]node_modules[/\\\\].+\\.(js|jsx|mjs)$"
     ],
     "moduleNameMapper": {
-      "^react-native$": "react-native-web"
+      "^react-native$": "react-native-web",
+      "^.+\\.(css|styl)$": "identity-obj-proxy"
     },
     "moduleFileExtensions": [
       "web.js",

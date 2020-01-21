@@ -160,10 +160,12 @@ module.exports = {
           // in development "style" loader enables hot editing of CSS.
           {
             test: /\.styl$/,
+            
             use: [
               'style-loader',
               'css-loader?modules&camelCase&localIdentName=[path]__[name]__[local]--[hash:base64:5]',
-              'stylus-loader'
+              'stylus-loader?modules&camelCase&localIdentName=[path]__[name]__[local]--[hash:base64:5]'
+             
             ]
           },
       

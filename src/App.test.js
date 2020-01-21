@@ -9,7 +9,7 @@ import { createStore, combineReducers } from 'redux';
 import { Provider, connect } from 'react-redux';
 import styles from  './style.styl';
 import '@testing-library/jest-dom'
-import jestStylus from 'jest-stylus';
+
 import path from 'path';
 
 // expect.extend({toBeInTheDocument, toHaveClass})
@@ -26,18 +26,11 @@ it("renders button ",  async () => {
 });
 
 it.only("renders username component",  async () => {
-  //const compoundReducer = combineReducers(allReducers);
-  // jest.mock('./style.styl', () => {
-  //   return {
-  //    username: 'color: red'
-  //   }
-  // })
 
-  jestStylus(path.resolve(__dirname, './style.styl'));
   const store = createStore(allReducers);
 
   render(<Provider store={store} >
-           <User  />
+           <User />
          </Provider>
     );
  

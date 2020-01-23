@@ -1,0 +1,400 @@
+diff --git a/node_modules/jest-transform-css/index.back.js b/node_modules/jest-transform-css/index.back.js
+new file mode 100644
+index 0000000..9a440d3
+--- /dev/null
++++ b/node_modules/jest-transform-css/index.back.js
+@@ -0,0 +1,150 @@
++const fs = require("fs");
++const crypto = require("crypto");
++const crossSpawn = require("cross-spawn");
++const cosmiconfig = require("cosmiconfig");
++const stripIndent = require("common-tags/lib/stripIndent");
++const THIS_FILE = fs.readFileSync(__filename);
++const explorer = cosmiconfig("jesttransformcss");
++const transformConfig = explorer.searchSync();
++const stylus = require('stylus');
++const appRoot = require('app-root-path');
++
++module.exports = {
++  getCacheKey: (fileData, filename, configString, { instrument }) => {
++    return (
++      crypto
++        .createHash("md5")
++        .update(THIS_FILE)
++        .update("\0", "utf8")
++        .update(fileData)
++        .update("\0", "utf8")
++        .update(filename)
++        .update("\0", "utf8")
++        .update(configString)
++        .update("\0", "utf8")
++        .update(JSON.stringify(transformConfig))
++        // TODO load postcssrc (the config) sync and make it part of the cache
++        // key
++        // .update("\0", "utf8")
++        // .update(getPostCssConfig(filename))
++        .update("\0", "utf8")
++        .update(instrument ? "instrument" : "")
++        .digest("hex")
++    );
++  },
++
++  process: (src, filename, config, options) => {
++    // skip when plain CSS is used
++    // You can create jesttransformcss.config.js in your project and add
++    // module.exports = { modules: true };
++    // or
++    // module.exports = { modules: filename => filename.endsWith(".mod.css") };
++    // to enable css module transformation. for all or for certain files.
++   
++    let useModules =
++      transformConfig &&
++      transformConfig.config &&
++      ((typeof transformConfig.config.modules === "boolean" &&
++        transformConfig.config.modules) ||
++        (typeof transformConfig.config.modules === "function" &&
++          transformConfig.config.modules(filename)));
++   
++    if (!useModules) {
++      console.log('reaching heresnsjns');
++      return stripIndent`
++        const styleInject = require('style-inject');
++
++        styleInject(${JSON.stringify(src)});
++        module.exports = {};
++      `;
++    }
++
++    //console.log('outside ');
++
++    // The "process" function of this Jest transform must be sync,
++    // but postcss is async. So we spawn a sync process to do an sync
++    // transformation!
++    // https://twitter.com/kentcdodds/status/1043194634338324480
++    const postcssRunner = `${__dirname}/postcss-runner.js`;
++ 
++
++    //console.log("postcssRunner", postcssRunner);
++    var appDir = appRoot.path
++    console.log('abha', appDir);
++    const str = fs.readFileSync(filename , 'utf8')
++    const paths = [
++      appDir + 'src/'
++    ];
++
++    stylus(str)
++    .set('filename', appDir + '/src/style.styl')
++    .set('paths', paths)
++    .render(function(err, css){
++      if(err) console.error();
++      console.log('******* css ***********', css);
++    })
++
++
++   
++    const compiledSource  = stylus.render(src); // write a function to compile
++    src = compiledSource;
++   
++
++    const result = crossSpawn.sync("node", [
++      "-e",
++      stripIndent`
++        require("${postcssRunner}")(
++          ${JSON.stringify({
++            src,
++            filename
++            // config,
++            // options
++          })}
++        ) 
++        .then(out => { console.log(JSON.stringify(out) ) })
++        `
++    ]);
++
++    // check for errors of postcss-runner.js
++    // const error = result.stderr.toString();
++    // console.log('I am throwing error', error)
++    // if (error) throw error;
++
++    // read results of postcss-runner.js from stdout
++    let css;
++    let tokens;
++    try {
++      // we likely logged something to the console from postcss-runner
++      // in order to debug, and hence the parsing fails!
++     
++      
++      parsed = JSON.parse(result.stdout.toString());
++
++      console.log("******** parsed json ********", parsed);
++     
++      css = parsed.css;
++      tokens = parsed.tokens;
++      if (Array.isArray(parsed.warnings))
++        parsed.warnings.forEach(warning => {
++          console.warn(warning);
++        });
++    } catch (error) {
++      // we forward the logs and return no mappings
++    
++      console.error(result.stderr.toString());
++      return stripIndent`
++        console.error("transform-css: Failed to load '${filename}'");
++        module.exports = {};
++      `;
++    }
++
++
++    // Finally, inject the styles to the document
++    return stripIndent`
++      const styleInject = require('style-inject');
++
++      styleInject(${JSON.stringify(css)});
++      module.exports = ${JSON.stringify(tokens)};
++    `;
++  }
++};
+diff --git a/node_modules/jest-transform-css/index.js b/node_modules/jest-transform-css/index.js
+index 9599b3f..f08eac1 100644
+--- a/node_modules/jest-transform-css/index.js
++++ b/node_modules/jest-transform-css/index.js
+@@ -6,6 +6,8 @@ const stripIndent = require("common-tags/lib/stripIndent");
+ const THIS_FILE = fs.readFileSync(__filename);
+ const explorer = cosmiconfig("jesttransformcss");
+ const transformConfig = explorer.searchSync();
++const stylus = require('stylus');
++const appRoot = require('app-root-path');
+ 
+ module.exports = {
+   getCacheKey: (fileData, filename, configString, { instrument }) => {
+@@ -38,14 +40,17 @@ module.exports = {
+     // or
+     // module.exports = { modules: filename => filename.endsWith(".mod.css") };
+     // to enable css module transformation. for all or for certain files.
+-    const useModules =
++   
++    let useModules =
+       transformConfig &&
+       transformConfig.config &&
+       ((typeof transformConfig.config.modules === "boolean" &&
+         transformConfig.config.modules) ||
+         (typeof transformConfig.config.modules === "function" &&
+           transformConfig.config.modules(filename)));
++   
+     if (!useModules) {
++      console.log('reaching heresnsjns');
+       return stripIndent`
+         const styleInject = require('style-inject');
+ 
+@@ -54,11 +59,38 @@ module.exports = {
+       `;
+     }
+ 
++    //console.log('outside ');
++
+     // The "process" function of this Jest transform must be sync,
+     // but postcss is async. So we spawn a sync process to do an sync
+     // transformation!
+     // https://twitter.com/kentcdodds/status/1043194634338324480
+     const postcssRunner = `${__dirname}/postcss-runner.js`;
++ 
++
++    //console.log("postcssRunner", postcssRunner);
++    var appDir = appRoot.path
++    const str = fs.readFileSync(filename , 'utf8')
++    
++    const paths = [
++      appDir + 'src/'
++    ];
++    stylus(str)
++    .set('filename', appDir + '/src/style.styl')
++    .set('paths', paths)
++    .render(function(err, renderedCss){
++      if(err) console.error();
++     
++       console.log('renderedCss', renderedCss)
++       src = renderedCss;
++   
++    
++
++    // const compiledSource  = stylus.render(src); // write a function to compile
++    // src = compiledSource;
++
++    
++
+     const result = crossSpawn.sync("node", [
+       "-e",
+       stripIndent`
+@@ -70,13 +102,14 @@ module.exports = {
+             // options
+           })}
+         ) 
+-        .then(out => { console.log(JSON.stringify(out)) })
+-      `
++        .then(out => { console.log(JSON.stringify(out) ) })
++        `
+     ]);
+ 
+     // check for errors of postcss-runner.js
+-    const error = result.stderr.toString();
+-    if (error) throw error;
++    // const error = result.stderr.toString();
++    // console.log('I am throwing error', error)
++    // if (error) throw error;
+ 
+     // read results of postcss-runner.js from stdout
+     let css;
+@@ -84,7 +117,12 @@ module.exports = {
+     try {
+       // we likely logged something to the console from postcss-runner
+       // in order to debug, and hence the parsing fails!
++     
++      
+       parsed = JSON.parse(result.stdout.toString());
++
++      console.log("******** parsed json ********", parsed);
++     
+       css = parsed.css;
+       tokens = parsed.tokens;
+       if (Array.isArray(parsed.warnings))
+@@ -93,14 +131,15 @@ module.exports = {
+         });
+     } catch (error) {
+       // we forward the logs and return no mappings
++    
+       console.error(result.stderr.toString());
+-      console.log(result.stdout.toString());
+       return stripIndent`
+         console.error("transform-css: Failed to load '${filename}'");
+         module.exports = {};
+       `;
+     }
+ 
++
+     // Finally, inject the styles to the document
+     return stripIndent`
+       const styleInject = require('style-inject');
+@@ -108,5 +147,8 @@ module.exports = {
+       styleInject(${JSON.stringify(css)});
+       module.exports = ${JSON.stringify(tokens)};
+     `;
++  })
++
++    
+   }
+ };
+diff --git a/node_modules/jest-transform-css/post_runner_backup.js b/node_modules/jest-transform-css/post_runner_backup.js
+new file mode 100644
+index 0000000..7ef98da
+--- /dev/null
++++ b/node_modules/jest-transform-css/post_runner_backup.js
+@@ -0,0 +1,74 @@
++const postcss = require("postcss");
++const postcssrc = require("postcss-load-config");
++const cssModules = require("postcss-modules");
++
++// This script is essentially a PostCSS Runner
++// https://github.com/postcss/postcss/blob/master/docs/guidelines/runner.md#postcss-runner-guidelines
++module.exports = ({ src, filename }) => {
++ 
++  const ctx = {
++    // Not sure whether the map is useful or not.
++    // Disabled for now. We can always enable it once it becomes clear.
++    map: false,
++    // To ensure that PostCSS generates source maps and displays better syntax
++    // errors, runners must specify the from and to options. If your runner does
++    // not handle writing to disk (for example, a gulp transform), you should
++    // set both options to point to the same file"
++    // https://github.com/postcss/postcss/blob/master/docs/guidelines/runner.md#21-set-from-and-to-processing-options
++    from: filename,
++    to: filename
++  };
++  let tokens = {};
++  return postcssrc(ctx)
++    .then(
++      config => ({ ...config, plugins: config.plugins || [] }),
++      error => {
++        // Support running without postcss.config.js
++        // This is useful in case the webpack setup of the consumer does not
++        // use PostCSS at all and simply uses css-loader in modules mode.
++        if (error.message.startsWith("No PostCSS Config found in:")) {
++          return { plugins: [], options: { from: filename, to: filename } };
++        }
++        throw error;
++      }
++    )
++    .then(({ plugins, options }) => {
++      
++      return postcss([
++        cssModules({
++          // Should we read generateScopedName from options?
++          // Does anybody care about the actual names? This is test-only anyways?
++          // Should be easy to add in case anybody needs it, just pass it through
++          // from jest.config.js (we have "config" & "options" in css.js)
++          generateScopedName: "[path][local]-[hash:base64:10]",
++          getJSON: (cssFileName, exportedTokens, outputFileName) => {
++            tokens = exportedTokens;
++          }
++        }),
++        ...plugins
++      ])
++        .process(src, options)
++        .then(
++          result => ({
++            css: result.css,
++            tokens,
++            // Display result.warnings()
++            // PostCSS runners must output warnings from result.warnings()
++            // https://github.com/postcss/postcss/blob/master/docs/guidelines/runner.md#32-display-resultwarnings
++            warnings: result.warnings().map(warn => warn.toString())
++          }),
++          // Don’t show JS stack for CssSyntaxError
++          // PostCSS runners must not show a stack trace for CSS syntax errors,
++          // as the runner can be used by developers who are not familiar with
++          // JavaScript. Instead, handle such errors gracefully:
++          // https://github.com/postcss/postcss/blob/master/docs/guidelines/runner.md#31-dont-show-js-stack-for-csssyntaxerror
++          error => {
++            if (error.name === "CssSyntaxError") {
++              process.stderr.write(error.message + error.showSourceCode());
++            } else {
++              throw error;
++            }
++          }
++        );
++    });
++};
+diff --git a/node_modules/jest-transform-css/postcss-runner.js b/node_modules/jest-transform-css/postcss-runner.js
+index 621924a..ea6a7bf 100644
+--- a/node_modules/jest-transform-css/postcss-runner.js
++++ b/node_modules/jest-transform-css/postcss-runner.js
+@@ -5,6 +5,7 @@ const cssModules = require("postcss-modules");
+ // This script is essentially a PostCSS Runner
+ // https://github.com/postcss/postcss/blob/master/docs/guidelines/runner.md#postcss-runner-guidelines
+ module.exports = ({ src, filename }) => {
++  
+   const ctx = {
+     // Not sure whether the map is useful or not.
+     // Disabled for now. We can always enable it once it becomes clear.
+@@ -32,13 +33,21 @@ module.exports = ({ src, filename }) => {
+       }
+     )
+     .then(({ plugins, options }) => {
++      debugger;
+       return postcss([
+         cssModules({
+           // Should we read generateScopedName from options?
+           // Does anybody care about the actual names? This is test-only anyways?
+           // Should be easy to add in case anybody needs it, just pass it through
+           // from jest.config.js (we have "config" & "options" in css.js)
+-          generateScopedName: "[path][local]-[hash:base64:10]",
++          generateScopedName: function(name, filename, css) {
++            var path = require("path");
++            var i = css.indexOf("." + name);
++            var line = css.substr(0, i).split(/[\r\n]/).length;
++            var file = path.basename(filename, ".css");
++      
++            return "_" + file +  "_" + name;
++          },
+           getJSON: (cssFileName, exportedTokens, outputFileName) => {
+             tokens = exportedTokens;
+           }

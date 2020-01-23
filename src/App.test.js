@@ -7,10 +7,11 @@ import User from "./components/user/user";
 import  allReducers from './reducers';
 import { createStore, combineReducers } from 'redux';
 import { Provider, connect } from 'react-redux';
-import styles from  './style.styl';
-import '@testing-library/jest-dom'
+//import styles from  './style.styl';
+import '@testing-library/jest-dom';
 
 import path from 'path';
+import { JestEnvironment } from "@jest/environment";
 
 // expect.extend({toBeInTheDocument, toHaveClass})
 
@@ -27,6 +28,15 @@ it("renders button ",  async () => {
 
 it.only("renders username component",  async () => {
 
+//   jest.mock('./style.styl',()=>{
+//     return {
+//         default: {
+//           username: 'username'
+//         }
+      
+//     };
+// });
+
   const store = createStore(allReducers);
 
   render(<Provider store={store} >
@@ -36,7 +46,7 @@ it.only("renders username component",  async () => {
  
   const screenshot = await generateImage({
     screenshot: {
-      path: 'test_component.png'
+      path: 'test_full.png'
     },
     debug: true
   });

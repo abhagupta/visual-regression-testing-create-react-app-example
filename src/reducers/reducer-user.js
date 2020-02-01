@@ -4,21 +4,21 @@ export default function() {
             id: 1,
             first: "Bucky",
             last: "Roberts",
-            age: 71,
+            age: 25,
             description: "Bucky is a great developer",
         },
         {
             id: 2,
             first: "Gordon",
             last: "Ramsay",
-            age: 71,
+            age: 52,
             description: "Gordon is a great chef",
         },
         {
             id: 3,
             first: "William",
             last: "Penn",
-            age: 71,
+            age: 43,
             description: "William is a great dancer",
         }
     ]

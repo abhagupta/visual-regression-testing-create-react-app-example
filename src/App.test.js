@@ -3,7 +3,7 @@ import { generateImage } from "jsdom-screenshot";
 import { render } from "react-testing-library";
 import App from "./App";
 import Button from "./components/button/button";
-import User from "./components/user/user";
+import User from "./components/connectedComponents/user/user";
 import  allReducers from './reducers';
 import { createStore, combineReducers } from 'redux';
 import { Provider, connect } from 'react-redux';
@@ -13,12 +13,9 @@ import '@testing-library/jest-dom';
 import path from 'path';
 import { JestEnvironment } from "@jest/environment";
 
-// expect.extend({toBeInTheDocument, toHaveClass})
-
-
 it("renders button ",  async () => {
   // render App into jsdom
-  render(<Button label="abha" />);
+  render(<Button label="Testing" />);
 
   // Take screenshot with generateImage()
   const screenshot = await generateImage();
@@ -26,16 +23,7 @@ it("renders button ",  async () => {
   expect(screenshot).toMatchImageSnapshot();
 });
 
-it.only("renders username component",  async () => {
-
-//   jest.mock('./style.styl',()=>{
-//     return {
-//         default: {
-//           username: 'username'
-//         }
-      
-//     };
-// });
+it("renders username component",  async () => {
 
   const store = createStore(allReducers);
 
@@ -45,10 +33,9 @@ it.only("renders username component",  async () => {
     );
  
   const screenshot = await generateImage({
-    screenshot: {
-      path: 'test_full.png'
-    },
-    debug: true
+    debug: false
   });
+
+  expect(screenshot).toMatchImageSnapshot();
  
 });

@@ -1,8 +1,8 @@
 import React, { Component } from "react";
 import logo from "./logo.svg";
-import styles from "./App.styl";
+import styles from "./styles/App.styl";
 import Button from './components/button/button';
-import User from './components/user/user';
+import User from './components/connectedComponents/user/user';
 
 class App extends Component {
   render() {
@@ -13,9 +13,9 @@ class App extends Component {
           <h1 className={styles.App_title}>Welcome to React</h1>
         </header>
         <p className={styles.App_intro}>
-          ABHA Visual Regression Testing is pretty awesome!
+         Visual Regression Testing is pretty awesome!
         </p>
-        <Button label ="Click Me" />
+        <Button label ="I am button component rendered for demo"/>
         <User />
       </div>
     );

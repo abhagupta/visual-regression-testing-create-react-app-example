@@ -1,8 +1,6 @@
 import React, {Component} from 'react';
-//import '../../style.css';
-import {bindActionCreators} from 'redux';
 import {connect } from 'react-redux';
-import styles from  '../../style.styl';
+import styles from  '../../../styles/user.styl';
 
 
 class User extends Component{
@@ -12,7 +10,6 @@ class User extends Component{
             return (
                 <li key={user.id}>{user.first} {user.last}</li>
             )
-        
             
         })
 
@@ -24,6 +21,7 @@ class User extends Component{
                 <ul>{this.getUserList()}</ul>
                 <hr />
                 <h2 className={styles.userdetails}>User Details</h2>
+                
             </div>
         )
    }

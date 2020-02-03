@@ -1,4 +1,5 @@
 module.exports = {
     modules: true,
-    pathToStyles: 'src/styles'
+    pathToStyles: 'src/styles',
+    stylus: true
 }

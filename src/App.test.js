@@ -5,17 +5,14 @@ import App from "./App";
 import Button from "./components/button/button";
 import User from "./components/connectedComponents/user/user";
 import  allReducers from './reducers';
-import { createStore, combineReducers } from 'redux';
-import { Provider, connect } from 'react-redux';
-//import styles from  './style.styl';
+import { createStore } from 'redux';
+import { Provider } from 'react-redux';
 import '@testing-library/jest-dom';
 
-import path from 'path';
-import { JestEnvironment } from "@jest/environment";
+const store = createStore(allReducers);
 
-it("renders button ",  async () => {
-  // render App into jsdom
-  render(<Button label="Testing" />);
+it("renders App ",  async () => {
+  render(<Provider store = {store} ><App /></Provider>);
 
   // Take screenshot with generateImage()
   const screenshot = await generateImage();
@@ -23,10 +20,13 @@ it("renders button ",  async () => {
   expect(screenshot).toMatchImageSnapshot();
 });
 
+it("renders button ",  async () => {
+  render(<Button label="Testing" />);
+  const screenshot = await generateImage();
+  expect(screenshot).toMatchImageSnapshot();
+});
+
 it("renders username component",  async () => {
-
-  const store = createStore(allReducers);
-
   render(<Provider store={store} >
            <User />
          </Provider>

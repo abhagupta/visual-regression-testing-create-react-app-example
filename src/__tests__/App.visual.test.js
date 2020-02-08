@@ -1,10 +1,10 @@
 import React from "react";
 import { generateImage } from "jsdom-screenshot";
 import { render } from "react-testing-library";
-import App from "./App";
-import Button from "./components/button/button";
-import User from "./components/connectedComponents/user/user";
-import  allReducers from './reducers';
+import App from "../App";
+import Button from "../components/button/button";
+import User from "../components/connectedComponents/user/user";
+import  allReducers from '../reducers';
 import { createStore } from 'redux';
 import { Provider } from 'react-redux';
 import '@testing-library/jest-dom';

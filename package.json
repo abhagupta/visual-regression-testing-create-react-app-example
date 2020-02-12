@@ -110,6 +110,7 @@
     "extends": "react-app"
   },
   "devDependencies": {
+    "@testing-library/react": "^9.4.0",
     "react-styleguidist-visual": "^0.9.0"
   }
 }
